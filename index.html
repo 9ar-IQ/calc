@@ -132,13 +132,13 @@
         }
     }
 
-    // Rounding logic for weight above 1 LB
+     // Rounding logic for weight above 1 LB
     if (weight > 1) {
         const decimalPart = weight - Math.floor(weight); // Get the decimal part of the weight
-        if (decimalPart >= 0.40) {
-            weight = Math.ceil(weight); // Round up if decimal part is >= 0.40
+        if (decimalPart < 0.50) {
+            weight = Math.floor(weight) + 0.50; // Consider it as 0.50 if decimal is less than 0.50
         } else {
-            weight = Math.floor(weight) + decimalPart; // Keep as-is if decimal part is < 0.40
+            weight = Math.ceil(weight); // Round up if decimal part is 0.50 or greater
         }
     }
     
