@@ -72,96 +72,94 @@
     </div>
 
     <script>
-        function calculateShipping() {
-            const productPrice = parseFloat(document.getElementById('productPrice').value);
-            let weight = parseFloat(document.getElementById('weight').value);
-            const itemType = document.getElementById('itemType').value;
-            const exchangeRateType = document.getElementById('exchangeRate').value;
+     function calculateShipping() {
+    const productPrice = parseFloat(document.getElementById('productPrice').value);
+    let weight = parseFloat(document.getElementById('weight').value);
+    const itemType = document.getElementById('itemType').value;
+    const exchangeRateType = document.getElementById('exchangeRate').value;
 
-            if (isNaN(productPrice) || productPrice <= 0 || isNaN(weight) || weight <= 0) {
-                document.getElementById('result').textContent = 'Please enter valid product price and weight.';
-                return;
-            }
+    if (isNaN(productPrice) || productPrice <= 0 || isNaN(weight) || weight <= 0) {
+        document.getElementById('result').textContent = 'Please enter valid product price and weight.';
+        return;
+    }
 
-            // Apply minimum weight of 0.25 LB
-            if (weight < 0.25) {
-                weight = 0.25;
-            }
+    // Apply minimum weight of 0.25 LB
+    if (weight < 0.25) {
+        weight = 0.25;
+    }
 
-            // Determine exchange rate
-            let exchangeRate = exchangeRateType === 'bank' ? 1323 : 1530;
+    // Determine exchange rate
+    let exchangeRate = exchangeRateType === 'bank' ? 1323 : 1500;
 
-            // Calculate the tax (10% of the product price)
-            const tax = productPrice * 0.10;
+    // Calculate the tax (7% of the product price)
+    const tax = productPrice * 0.07;
 
-            // Determine shipping price per LB based on weight and item type (in USD)
-            let pricePerLB;
-            if (itemType === 'normal') {
-                // Normal product shipping prices
-                if (weight <= 1) {
-                    pricePerLB = 12;
-                } else if (weight <= 2) {
-                    pricePerLB = 11.50;
-                } else if (weight <= 3) {
-                    pricePerLB = 11;
-                } else if (weight <= 4) {
-                    pricePerLB = 10.50;
-                } else if (weight <= 5) {
-                    pricePerLB = 10;
-                } else if (weight <= 10) {
-                    pricePerLB = 9.50;
-                } else {
-                    pricePerLB = 9;
-                }
-            } else {
-                // Dangerous product shipping prices
-                if (weight <= 1) {
-                    pricePerLB = 32;
-                } else if (weight <= 2) {
-                    pricePerLB = 30.50;
-                } else if (weight <= 3) {
-                    pricePerLB = 29.50;
-                } else if (weight <= 4) {
-                    pricePerLB = 28;
-                } else if (weight <= 5) {
-                    pricePerLB = 26.50;
-                } else if (weight <= 10) {
-                    pricePerLB = 25.50;
-                } else {
-                    pricePerLB = 24;
-                }
-            }
-
-            // Calculate total shipping price in USD (weight * price per LB)
-            const shippingPriceUSD = weight * pricePerLB;
-
-            // Total cost before multiplication (product price + shipping price + tax)
-            const preMultiplierTotal = productPrice + shippingPriceUSD + tax;
-
-            // Apply multiplication of 1.05 to the total
-            let finalTotalUSD = preMultiplierTotal * 1.05;
-
-            // Ensure at least a $1 increment if the increase is less than $1
-            if (finalTotalUSD - preMultiplierTotal < 1) {
-                finalTotalUSD = preMultiplierTotal + 1;
-            }
-
-            // Convert total price to IQD (finalTotalUSD * exchange rate)
-            const totalPriceIQD = finalTotalUSD * exchangeRate;
-
-            // Round up USD to nearest whole number
-            const roundedTotalShippingUSD = Math.ceil(finalTotalUSD);
-
-            // Round up IQD to the nearest thousand
-            const roundedTotalPriceIQD = Math.ceil(totalPriceIQD / 1000) * 1000;
-
-            // Format numbers without decimals
-            const formattedUSD = roundedTotalShippingUSD.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-            const formattedIQD = roundedTotalPriceIQD.toLocaleString('en-US');
-
-            // Display the final rounded result in both USD and IQD
-            document.getElementById('result').textContent = `Total Order cost is: ${formattedUSD} USD or ${formattedIQD} IQD`;
+    // Determine shipping price per LB based on weight and item type (in USD)
+    let pricePerLB;
+    if (itemType === 'normal') {
+        // Normal product shipping prices
+        if (weight <= 1) {
+            pricePerLB = 12;
+        } else if (weight <= 2) {
+            pricePerLB = 11.50;
+        } else if (weight <= 3) {
+            pricePerLB = 11;
+        } else if (weight <= 4) {
+            pricePerLB = 10.50;
+        } else if (weight <= 5) {
+            pricePerLB = 10;
+        } else if (weight <= 10) {
+            pricePerLB = 9.50;
+        } else {
+            pricePerLB = 9;
         }
+    } else {
+        // Dangerous product shipping prices
+        if (weight <= 1) {
+            pricePerLB = 32;
+        } else if (weight <= 2) {
+            pricePerLB = 30.50;
+        } else if (weight <= 3) {
+            pricePerLB = 29.50;
+        } else if (weight <= 4) {
+            pricePerLB = 28;
+        } else if (weight <= 5) {
+            pricePerLB = 26.50;
+        } else if (weight <= 10) {
+            pricePerLB = 25.50;
+        } else {
+            pricePerLB = 24;
+        }
+    }
+
+    // Calculate total shipping price in USD (weight * price per LB)
+    const shippingPriceUSD = weight * pricePerLB;
+
+    // Total cost before multiplication (product price + shipping price + tax)
+    const preMultiplierTotal = productPrice + shippingPriceUSD + tax;
+
+    // Apply multiplication of 1.05 to the total
+    let finalTotalUSD = preMultiplierTotal * 1.05;
+
+    // Ensure at least a $1 increment if the increase is less than $1
+    if (finalTotalUSD - preMultiplierTotal < 1) {
+        finalTotalUSD = preMultiplierTotal + 1;
+    }
+
+    // Round up USD to nearest whole number
+    const roundedTotalShippingUSD = Math.ceil(finalTotalUSD);
+
+    // Calculate IQD based on rounded USD value
+    const totalPriceIQD = roundedTotalShippingUSD * exchangeRate;
+
+    // Format numbers without decimals
+    const formattedUSD = roundedTotalShippingUSD.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    const formattedIQD = totalPriceIQD.toLocaleString('en-US');
+
+    // Display the final rounded result in both USD and IQD
+    document.getElementById('result').textContent = `Total shipping cost: ${formattedUSD} USD or ${formattedIQD} IQD`;
+}
+
     </script>
 </body>
 </html>
