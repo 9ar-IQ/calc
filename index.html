@@ -89,29 +89,29 @@
     }
 
     // Determine exchange rate
-    let exchangeRate = exchangeRateType === 'bank' ? 1323 : 1530;
+    let exchangeRate = exchangeRateType === 'bank' ? 1320 : 1530;
 
-    // Calculate the tax (10% of the product price)
-    const tax = productPrice * 0.10;
+    // Calculate the tax (7% of the product price)
+    const tax = productPrice * 0.07;
 
     // Determine shipping price per LB based on weight and item type (in USD)
     let pricePerLB;
     if (itemType === 'normal') {
         // Normal product shipping prices
         if (weight <= 1) {
-            pricePerLB = 12;
+            pricePerLB = 25;
         } else if (weight <= 2) {
-            pricePerLB = 11.50;
+            pricePerLB = 18;
         } else if (weight <= 3) {
-            pricePerLB = 11;
+            pricePerLB = 15;
         } else if (weight <= 4) {
-            pricePerLB = 10.50;
+            pricePerLB = 13.50;
         } else if (weight <= 5) {
-            pricePerLB = 10;
+            pricePerLB = 12;
         } else if (weight <= 10) {
-            pricePerLB = 9.50;
+            pricePerLB = 10.50;
         } else {
-            pricePerLB = 9;
+            pricePerLB = 8.50;
         }
     } else {
         // Dangerous product shipping prices
