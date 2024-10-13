@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>9ar B2B Calculator</title>
+    <title>9ar B2B USA Calculator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -45,7 +45,7 @@
 </head>
 <body>
     <div class="container">
-        <h2>9ar B2B Calculator</h2>
+        <h2>9ar B2B USA Calculator</h2>
         <form id="shippingForm">
             <label for="productPrice">Enter Total Products Price (USD):</label>
             <input type="number" id="productPrice" min="0" placeholder="Total Price in USD">
@@ -160,7 +160,7 @@
             const formattedIQD = roundedTotalPriceIQD.toLocaleString('en-US');
 
             // Display the final rounded result in both USD and IQD
-            document.getElementById('result').textContent = `Total shipping cost: ${formattedUSD} USD or ${formattedIQD} IQD`;
+            document.getElementById('result').textContent = `Total Order cost is: ${formattedUSD} USD or ${formattedIQD} IQD`;
         }
     </script>
 </body>
