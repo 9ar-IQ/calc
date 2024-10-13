@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9ar B2B Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+            width: 100%;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>9ar B2B Calculator</h2>
+        <form id="shippingForm">
+            <label for="productPrice">Enter Total Products Price (USD):</label>
+            <input type="number" id="productPrice" min="0" placeholder="Total Price in USD">
+
+            <label for="weight">Enter Total Shipment Weight (LB):</label>
+            <input type="number" id="weight" min="0" placeholder="Weight in LB">
+
+            <label for="itemType">Select Product Type:</label>
+            <select id="itemType">
+                <option value="normal">Normal</option>
+                <option value="dangerous">Dangerous</option>
+            </select>
+
+            <label for="exchangeRate">Select Exchange Rate Type:</label>
+            <select id="exchangeRate">
+                <option value="bank">Bank Rate</option>
+                <option value="market">Market Rate</option>
+            </select>
+
+            <button type="button" onclick="calculateShipping()">Calculate</button>
+        </form>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function calculateShipping() {
+            const productPrice = parseFloat(document.getElementById('productPrice').value);
+            let weight = parseFloat(document.getElementById('weight').value);
+            const itemType = document.getElementById('itemType').value;
+            const exchangeRateType = document.getElementById('exchangeRate').value;
+
+            if (isNaN(productPrice) || productPrice <= 0 || isNaN(weight) || weight <= 0) {
+                document.getElementById('result').textContent = 'Please enter valid product price and weight.';
+                return;
+            }
+
+            // Apply minimum weight of 0.25 LB
+            if (weight < 0.25) {
+                weight = 0.25;
+            }
+
+            // Determine exchange rate
+            let exchangeRate = exchangeRateType === 'bank' ? 1323 : 1500;
+
+            // Calculate the tax (7% of the product price)
+            const tax = productPrice * 0.07;
+
+            // Determine shipping price per LB based on weight and item type (in USD)
+            let pricePerLB;
+            if (itemType === 'normal') {
+                // Normal product shipping prices
+                if (weight <= 1) {
+                    pricePerLB = 12;
+                } else if (weight <= 2) {
+                    pricePerLB = 11.50;
+                } else if (weight <= 3) {
+                    pricePerLB = 11;
+                } else if (weight <= 4) {
+                    pricePerLB = 10.50;
+                } else if (weight <= 5) {
+                    pricePerLB = 10;
+                } else if (weight <= 10) {
+                    pricePerLB = 9.50;
+                } else {
+                    pricePerLB = 9;
+                }
+            } else {
+                // Dangerous product shipping prices
+                if (weight <= 1) {
+                    pricePerLB = 32;
+                } else if (weight <= 2) {
+                    pricePerLB = 30.50;
+                } else if (weight <= 3) {
+                    pricePerLB = 29.50;
+                } else if (weight <= 4) {
+                    pricePerLB = 28;
+                } else if (weight <= 5) {
+                    pricePerLB = 26.50;
+                } else if (weight <= 10) {
+                    pricePerLB = 25.50;
+                } else {
+                    pricePerLB = 24;
+                }
+            }
+
+            // Calculate total shipping price in USD (weight * price per LB)
+            const shippingPriceUSD = weight * pricePerLB;
+
+            // Total cost before multiplication (product price + shipping price + tax)
+            const preMultiplierTotal = productPrice + shippingPriceUSD + tax;
+
+            // Apply multiplication of 1.05 to the total
+            let finalTotalUSD = preMultiplierTotal * 1.05;
+
+            // Ensure at least a $1 increment if the increase is less than $1
+            if (finalTotalUSD - preMultiplierTotal < 1) {
+                finalTotalUSD = preMultiplierTotal + 1;
+            }
+
+            // Convert total price to IQD (finalTotalUSD * exchange rate)
+            const totalPriceIQD = finalTotalUSD * exchangeRate;
+
+            // Round up USD to nearest whole number
+            const roundedTotalShippingUSD = Math.ceil(finalTotalUSD);
+
+            // Round up IQD to the nearest thousand
+            const roundedTotalPriceIQD = Math.ceil(totalPriceIQD / 1000) * 1000;
+
+            // Format numbers with commas
+            const formattedUSD = roundedTotalShippingUSD.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            const formattedIQD = roundedTotalPriceIQD.toLocaleString('en-US');
+
+            // Display the final rounded result in both USD and IQD
+            document.getElementById('result').textContent = `Total shipping cost: ${formattedUSD} or ${formattedIQD} IQD`;
+        }
+    </script>
+</body>
+</html>
