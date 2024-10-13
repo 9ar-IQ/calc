@@ -132,6 +132,16 @@
         }
     }
 
+    // Rounding logic for weight above 1 LB
+    if (weight > 1) {
+        const decimalPart = weight - Math.floor(weight); // Get the decimal part of the weight
+        if (decimalPart >= 0.40) {
+            weight = Math.ceil(weight); // Round up if decimal part is >= 0.40
+        } else {
+            weight = Math.floor(weight) + decimalPart; // Keep as-is if decimal part is < 0.40
+        }
+    }
+    
     // Calculate total shipping price in USD (weight * price per LB)
     const shippingPriceUSD = weight * pricePerLB;
 
