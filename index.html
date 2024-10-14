@@ -167,7 +167,7 @@
          
     // Format numbers without decimals
     const formattedUSD = roundedTotalShippingUSD.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-    const formattedIQD = totalPriceIQD.toLocaleString('en-US');
+    const formattedIQD = roundedTotalPriceIQD.toLocaleString('en-US');
 
     // Display the final rounded result in both USD and IQD
     document.getElementById('result').textContent = `Total Order cost is: ${formattedUSD} USD or ${formattedIQD} IQD`;
