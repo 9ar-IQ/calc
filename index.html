@@ -159,8 +159,8 @@
     // Round up USD to nearest whole number
     const roundedTotalShippingUSD = Math.ceil(finalTotalUSD);
 
-    // Calculate IQD based on rounded USD value
-    const totalPriceIQD = roundedTotalShippingUSD * exchangeRate;
+    // Calculate IQD based on rounded USD value & Round up IQD to the nearest thousand
+    const totalPriceIQD = (roundedTotalShippingUSD * exchangeRate)/1000) *1000;
 
     // Format numbers without decimals
     const formattedUSD = roundedTotalShippingUSD.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
