@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9ar B2B USA Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        input, select, button {
+            padding: 12px;
+            margin: 10px 0;
+            width: calc(100% - 24px);
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .dimensions {
+            display: flex;
+            justify-content: space-between;
+        }
+        .dimension-input {
+            width: 30%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>9ar B2B USA Calculator</h2>
+        <form id="shippingForm">
+            <label for="productPrice">Enter Total Products Price (USD):</label>
+            <input type="number" id="productPrice" min="0" placeholder="Total Price in USD">
+
+            <label for="weight">Enter Total Shipment Weight (LB):</label>
+            <input type="number" id="weight" min="0" placeholder="Weight in LB">
+
+            <label for="dimensions">Enter Package Dimensions (Inches):</label>
+            <div class="dimensions">
+                <input type="number" id="length" placeholder="Length" class="dimension-input">
+                <input type="number" id="width" placeholder="Width" class="dimension-input">
+                <input type="number" id="height" placeholder="Height" class="dimension-input">
+            </div>
+
+            <label for="itemType">Select Product Type:</label>
+            <select id="itemType">
+                <option value="normal">Normal</option>
+                <option value="dangerous">Dangerous</option>
+            </select>
+
+            <label for="paymentCurrency">Select Payment Currency:</label>
+            <select id="paymentCurrency">
+                <option value="USD">USD</option>
+                <option value="IQD">IQD</option>
+            </select>
+
+            <button type="button" onclick="calculateShipping()">Calculate</button>
+        </form>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function calculateShipping() {
+            const productPrice = parseFloat(document.getElementById('productPrice').value);
+            let weight = parseFloat(document.getElementById('weight').value);
+            const length = parseFloat(document.getElementById('length').value);
+            const width = parseFloat(document.getElementById('width').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const itemType = document.getElementById('itemType').value;
+            const paymentCurrency = document.getElementById('paymentCurrency').value;
+
+            // Validate inputs
+            if (!productPrice || productPrice <= 0 || !weight || weight <= 0) {
+                document.getElementById('result').textContent = 'Please enter valid product price and weight.';
+                return;
+            }
+
+            // Ensure minimum weight of 0.25 LB
+            weight = Math.max(weight, 0.25);
+
+            // Calculate dimensional weight if dimensions are provided
+            let dimWeight = 0;
+            if (length > 0 && width > 0 && height > 0) {
+                dimWeight = (length * width * height) / 139; // Adjust divisor based on carrier, here using 139
+                weight = Math.max(weight, dimWeight); // Use larger of actual weight or dimensional weight
+            }
+
+            // Calculate tax (7% of product price)
+            const tax = productPrice * 0.07;
+
+            // Get price per pound based on weight and item type
+            const pricePerLB = calculatePricePerPound(weight, itemType);
+
+            // Apply fuel surcharge (5%)
+            const fuelSurchargeRate = 0.05;
+            const shippingPriceUSD = weight * pricePerLB;
+            const fuelSurcharge = shippingPriceUSD * fuelSurchargeRate;
+
+            // Sub-final total calculation (includes tax, shipping, fuel surcharge)
+            let SubFinalTotalUSD = productPrice + shippingPriceUSD + fuelSurcharge + tax;
+
+            // Apply Buy4Me charge (5%)
+            const finalTotalUSD = SubFinalTotalUSD * 1.05;
+
+            // Calculate final cost based on selected currency
+            if (paymentCurrency === 'USD') {
+                // USD calculation
+                const roundedTotalShippingUSD = Math.ceil(finalTotalUSD);
+                document.getElementById('result').textContent = `Total Order cost is: ${roundedTotalShippingUSD} USD`;
+            } else {
+                // IQD calculation with 3% fluctuation rate
+                const exchangeRate = 1500 * 1.02;
+                const totalPriceIQD = finalTotalUSD * exchangeRate;
+                const roundedTotalPriceIQD = Math.ceil(totalPriceIQD / 1000) * 1000;
+                document.getElementById('result').textContent = `Total Order cost is: ${roundedTotalPriceIQD.toLocaleString('en-US')} IQD`;
+            }
+
+        }
+
+        function calculatePricePerPound(weight, itemType) {
+            // Normal items pricing by weight range
+            const normalPricing = [
+                { maxWeight: 1, price: 18 },
+                { maxWeight: 1.5, price: 16.50 },
+                { maxWeight: 2, price: 15.50 },
+                { maxWeight: 2.5, price: 14.50 },
+                { maxWeight: 3, price: 13.50 },
+                { maxWeight: 3.5, price: 13.00 },
+                { maxWeight: 4, price: 12.50 },
+                { maxWeight: 5, price: 12.00 },
+                { maxWeight: 7.5, price: 11.50 },
+                { maxWeight: 10, price: 11.00 },
+                { maxWeight: Infinity, price: 10.50 }
+            ];
+
+            // Dangerous goods surcharge based on weight
+            const dangerousGoodsSurcharge = weight <= 10 ? 15 : 25;
+
+            // Calculate price based on item type
+            if (itemType === 'normal') {
+                return getPriceForWeight(normalPricing, weight);
+            } else {
+                // Dangerous items pricing: $34.50 for ≤ 1 lb, $17 + surcharge for > 1 lb
+                return weight <= 1 ? 34.50 : 17 + dangerousGoodsSurcharge;
+            }
+        }
+
+        function getPriceForWeight(pricing, weight) {
+            // Get price based on weight bracket
+            return pricing.find(tier => weight <= tier.maxWeight).price;
+        }
+    </script>
+</body>
+</html>
