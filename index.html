@@ -134,7 +134,7 @@
                 const roundedTotalShippingUSD = Math.ceil(finalTotalUSD);
                 document.getElementById('result').textContent = `Total Order cost is: ${roundedTotalShippingUSD} USD`;
             } else {
-                // IQD calculation with 3% fluctuation rate
+                // IQD calculation with 2% fluctuation rate
                 const exchangeRate = 1500 * 1.02;
                 const totalPriceIQD = finalTotalUSD * exchangeRate;
                 const roundedTotalPriceIQD = Math.ceil(totalPriceIQD / 1000) * 1000;
