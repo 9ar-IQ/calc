@@ -86,113 +86,119 @@
     </div>
 
     <script>
-        // Define constants for configurable values
-        const EXCHANGE_RATE_IQD = 1500 * 1.02;
-        const FUEL_SURCHARGE_RATE = 0.05;
-        const DIM_WEIGHT_DIVISOR = 139;
-        const OVERSIZED_SURCHARGE = 50;  // Oversized item surcharge
-        const OVERSIZE_DIM_LIMIT = 100;  // Combined length, width, height limit for oversized items
-        const VOLUME_DISCOUNT_THRESHOLD = 50;  // Volume discount threshold in lbs
-        const VOLUME_DISCOUNT_RATE = 0.10;  // 10% discount for large shipments
+// Define constants for configurable values
+const EXCHANGE_RATE_IQD = 1500 * 1.02;
+const FUEL_SURCHARGE_RATE = 0.05;
+const DIM_WEIGHT_DIVISOR = 139;
+const OVERSIZED_SURCHARGE = 50;  // Oversized item surcharge
+const OVERSIZE_DIM_LIMIT = 100;  // Combined length, width, height limit for oversized items
 
-        // Normal pricing and surcharge for dangerous goods
-        const normalPricing = [
-            { maxWeight: 1, price: 18 },
-            { maxWeight: 1.5, price: 16.50 },
-            { maxWeight: 2, price: 15.50 },
-            { maxWeight: 2.5, price: 14.50 },
-            { maxWeight: 3, price: 13.50 },
-            { maxWeight: 3.5, price: 13.00 },
-            { maxWeight: 4, price: 12.50 },
-            { maxWeight: 5, price: 12.00 },
-            { maxWeight: 7.5, price: 11.50 },
-            { maxWeight: 10, price: 11.00 },
-            { maxWeight: Infinity, price: 10.50 }
-        ];
+// Updated Pricing Brackets for Normal Items
+const normalPricing = [
+    { maxWeight: 1, price: 18 },     // Up to 1 lb
+    { maxWeight: 2, price: 17 },     // 1.01 - 2 lb
+    { maxWeight: 3, price: 15.50 },  // 2.01 - 3 lb
+    { maxWeight: 5, price: 14 },     // 3.01 - 5 lb
+    { maxWeight: 10, price: 12 },    // 5.01 - 10 lb
+    { maxWeight: 20, price: 11 },    // 10.01 - 20 lb
+    { maxWeight: Infinity, price: 10 } // Above 20 lb
+];
 
-        const dangerousGoodsSurcharge = { lowWeight: 15, highWeight: 20 };
+// Updated Dangerous Goods Pricing and Scaled Surcharge
+const dangerousGoodsSurcharge = { 
+    lowWeight: 15, 
+    highWeight: 20, 
+    extraComplexity: 25 // Extra surcharge for weights over 10 lbs
+};
 
-        function calculateShipping() {
-            const productPrice = parseFloat(document.getElementById('productPrice').value);
-            let weight = parseFloat(document.getElementById('weight').value);
-            const length = parseFloat(document.getElementById('length').value);
-            const width = parseFloat(document.getElementById('width').value);
-            const height = parseFloat(document.getElementById('height').value);
-            const itemType = document.getElementById('itemType').value;
-            const paymentCurrency = document.getElementById('paymentCurrency').value;
+// Updated Volume Discount Tiers
+const VOLUME_DISCOUNT_30LB = 0.05;  // 5% discount for shipments > 30 lbs
+const VOLUME_DISCOUNT_50LB = 0.10;  // 10% discount for shipments > 50 lbs
 
-            // Validate inputs
-            if (!productPrice || productPrice <= 0 || !weight || weight <= 0) {
-                document.getElementById('result').textContent = 'Please enter valid product price and weight.';
-                return;
-            }
+function calculateShipping() {
+    const productPrice = parseFloat(document.getElementById('productPrice').value);
+    let weight = parseFloat(document.getElementById('weight').value);
+    const length = parseFloat(document.getElementById('length').value);
+    const width = parseFloat(document.getElementById('width').value);
+    const height = parseFloat(document.getElementById('height').value);
+    const itemType = document.getElementById('itemType').value;
+    const paymentCurrency = document.getElementById('paymentCurrency').value;
 
-            // Ensure minimum weight of 0.25 LB
-            weight = Math.max(weight, 0.25);
+    // Validate inputs
+    if (!productPrice || productPrice <= 0 || !weight || weight <= 0) {
+        document.getElementById('result').textContent = 'Please enter valid product price and weight.';
+        return;
+    }
 
-            // Calculate dimensional weight if dimensions are provided
-            let dimWeight = 0;
-            if (length > 0 && width > 0 && height > 0) {
-                dimWeight = (length * width * height) / DIM_WEIGHT_DIVISOR;
-                weight = Math.max(weight, dimWeight); // Use larger of actual weight or dimensional weight
-            }
+    // Ensure minimum weight of 0.25 LB
+    weight = Math.max(weight, 0.25);
 
-            // Calculate tax (7% of product price)
-            const tax = productPrice * 0.07;
+    // Calculate dimensional weight if dimensions are provided
+    let dimWeight = 0;
+    if (length > 0 && width > 0 && height > 0) {
+        dimWeight = (length * width * height) / DIM_WEIGHT_DIVISOR;
+        weight = Math.max(weight, dimWeight); // Use larger of actual weight or dimensional weight
+    }
 
-            // Get price per pound based on weight and item type
-            const pricePerLB = calculatePricePerPound(weight, itemType);
+    // Calculate tax (7% of product price)
+    const tax = productPrice * 0.07;
 
-            // Apply fuel surcharge
-            const shippingPriceUSD = weight * pricePerLB;
-            const fuelSurcharge = shippingPriceUSD * FUEL_SURCHARGE_RATE;
+    // Get price per pound based on weight and item type
+    const pricePerLB = calculatePricePerPound(weight, itemType);
 
-            // Apply volume discount if applicable
-            let volumeDiscount = 0;
-            if (weight > VOLUME_DISCOUNT_THRESHOLD) {
-                volumeDiscount = shippingPriceUSD * VOLUME_DISCOUNT_RATE;
-            }
+    // Apply fuel surcharge
+    const shippingPriceUSD = weight * pricePerLB;
+    const fuelSurcharge = shippingPriceUSD * FUEL_SURCHARGE_RATE;
 
-            // Apply oversized surcharge if dimensions exceed the limit
-            let oversizedSurcharge = 0;
-            if (length + width + height > OVERSIZE_DIM_LIMIT) {
-                oversizedSurcharge = OVERSIZED_SURCHARGE;
-            }
+    // Apply volume discount based on updated tiers
+    let volumeDiscount = 0;
+    if (weight > 50) {
+        volumeDiscount = shippingPriceUSD * VOLUME_DISCOUNT_50LB; // 10% for weight > 50 lbs
+    } else if (weight > 30) {
+        volumeDiscount = shippingPriceUSD * VOLUME_DISCOUNT_30LB; // 5% for weight > 30 lbs
+    }
 
-            // Sub-final total calculation (includes tax, shipping, fuel surcharge, oversized surcharge, and volume discount)
-            let subFinalTotalUSD = productPrice + shippingPriceUSD + fuelSurcharge + tax + oversizedSurcharge - volumeDiscount;
+    // Apply oversized surcharge if dimensions exceed the limit
+    let oversizedSurcharge = 0;
+    if (length + width + height > OVERSIZE_DIM_LIMIT) {
+        oversizedSurcharge = OVERSIZED_SURCHARGE;
+    }
 
-            // Apply Buy4Me charge (5%)
-            const finalTotalUSD = subFinalTotalUSD * 1.05;
+    // Sub-final total calculation (includes tax, shipping, fuel surcharge, oversized surcharge, and volume discount)
+    let subFinalTotalUSD = productPrice + shippingPriceUSD + fuelSurcharge + tax + oversizedSurcharge - volumeDiscount;
 
-            // Round finalTotalUSD to the nearest whole number
-           const roundedFinalTotalUSD = Math.round(finalTotalUSD);
+    // Apply Buy4Me charge (5%)
+    const finalTotalUSD = subFinalTotalUSD * 1.05;
 
-            // Calculate final cost based on selected currency
-           if (paymentCurrency === 'USD') {
-    document.getElementById('result').textContent = `Total Order cost is: ${roundedFinalTotalUSD} USD`;
-           } else {
-          // IQD calculation
-          const totalPriceIQD = roundedFinalTotalUSD * EXCHANGE_RATE_IQD;
-     const roundedTotalPriceIQD = Math.ceil(totalPriceIQD / 1000) * 1000;
-    document.getElementById('result').textContent = `Total Order cost is: ${roundedTotalPriceIQD.toLocaleString('en-US')} IQD`;
-           }
-        }
+    // Round finalTotalUSD to the nearest whole number
+    const roundedFinalTotalUSD = Math.round(finalTotalUSD);
 
-        function calculatePricePerPound(weight, itemType) {
-            // Calculate price based on item type
-            if (itemType === 'normal') {
-                return getPriceForWeight(normalPricing, weight);
-            } else {
-                // Dangerous items pricing: $34.50 for ≤ 1 lb, $17 + surcharge for > 1 lb
-                return weight <= 1 ? 34.50 : 17 + (weight <= 10 ? dangerousGoodsSurcharge.lowWeight : dangerousGoodsSurcharge.highWeight);
-            }
-        }
+    // Calculate final cost based on selected currency
+    if (paymentCurrency === 'USD') {
+        document.getElementById('result').textContent = `Total Order cost is: ${roundedFinalTotalUSD} USD`;
+    } else {
+        // IQD calculation
+        const totalPriceIQD = roundedFinalTotalUSD * EXCHANGE_RATE_IQD;
+        const roundedTotalPriceIQD = Math.ceil(totalPriceIQD / 1000) * 1000;
+        document.getElementById('result').textContent = `Total Order cost is: ${roundedTotalPriceIQD.toLocaleString('en-US')} IQD`;
+    }
+}
 
-        function getPriceForWeight(pricing, weight) {
-            // Get price based on weight bracket
-            return pricing.find(tier => weight <= tier.maxWeight).price;
-        }
+function calculatePricePerPound(weight, itemType) {
+    // Calculate price based on item type
+    if (itemType === 'normal') {
+        return getPriceForWeight(normalPricing, weight);
+    } else {
+        // Dangerous items pricing: $34.50 for ≤ 1 lb, $17 + scaled surcharge for > 1 lb
+        return weight <= 1 ? 34.50 : 17 + (weight <= 10 ? dangerousGoodsSurcharge.lowWeight : dangerousGoodsSurcharge.highWeight + dangerousGoodsSurcharge.extraComplexity);
+    }
+}
+
+function getPriceForWeight(pricing, weight) {
+    // Get price based on weight bracket
+    return pricing.find(tier => weight <= tier.maxWeight).price;
+}
+
     </script>
 </body>
 </html>
