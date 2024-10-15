@@ -86,6 +86,32 @@
     </div>
 
     <script>
+        // Define constants for configurable values
+        const EXCHANGE_RATE_IQD = 1500 * 1.02;
+        const FUEL_SURCHARGE_RATE = 0.05;
+        const DIM_WEIGHT_DIVISOR = 139;
+        const OVERSIZED_SURCHARGE = 50;  // Oversized item surcharge
+        const OVERSIZE_DIM_LIMIT = 100;  // Combined length, width, height limit for oversized items
+        const VOLUME_DISCOUNT_THRESHOLD = 50;  // Volume discount threshold in lbs
+        const VOLUME_DISCOUNT_RATE = 0.10;  // 10% discount for large shipments
+
+        // Normal pricing and surcharge for dangerous goods
+        const normalPricing = [
+            { maxWeight: 1, price: 18 },
+            { maxWeight: 1.5, price: 16.50 },
+            { maxWeight: 2, price: 15.50 },
+            { maxWeight: 2.5, price: 14.50 },
+            { maxWeight: 3, price: 13.50 },
+            { maxWeight: 3.5, price: 13.00 },
+            { maxWeight: 4, price: 12.50 },
+            { maxWeight: 5, price: 12.00 },
+            { maxWeight: 7.5, price: 11.50 },
+            { maxWeight: 10, price: 11.00 },
+            { maxWeight: Infinity, price: 10.50 }
+        ];
+
+        const dangerousGoodsSurcharge = { lowWeight: 15, highWeight: 25 };
+
         function calculateShipping() {
             const productPrice = parseFloat(document.getElementById('productPrice').value);
             let weight = parseFloat(document.getElementById('weight').value);
@@ -107,7 +133,7 @@
             // Calculate dimensional weight if dimensions are provided
             let dimWeight = 0;
             if (length > 0 && width > 0 && height > 0) {
-                dimWeight = (length * width * height) / 139; // Adjust divisor based on carrier, here using 139
+                dimWeight = (length * width * height) / DIM_WEIGHT_DIVISOR;
                 weight = Math.max(weight, dimWeight); // Use larger of actual weight or dimensional weight
             }
 
@@ -117,57 +143,49 @@
             // Get price per pound based on weight and item type
             const pricePerLB = calculatePricePerPound(weight, itemType);
 
-            // Apply fuel surcharge (5%)
-            const fuelSurchargeRate = 0.05;
+            // Apply fuel surcharge
             const shippingPriceUSD = weight * pricePerLB;
-            const fuelSurcharge = shippingPriceUSD * fuelSurchargeRate;
+            const fuelSurcharge = shippingPriceUSD * FUEL_SURCHARGE_RATE;
 
-            // Sub-final total calculation (includes tax, shipping, fuel surcharge)
-            let SubFinalTotalUSD = productPrice + shippingPriceUSD + fuelSurcharge + tax;
-
-            // Apply Buy4Me charge (5%)
-            const finalTotalUSD = SubFinalTotalUSD * 1.05;
-
-            // Calculate final cost based on selected currency
-            if (paymentCurrency === 'USD') {
-                // USD calculation
-                const roundedTotalShippingUSD = Math.ceil(finalTotalUSD);
-                document.getElementById('result').textContent = `Total Order cost is: ${roundedTotalShippingUSD} USD`;
-            } else {
-                // IQD calculation with 2% fluctuation rate
-                const exchangeRate = 1500 * 1.02;
-                const totalPriceIQD = finalTotalUSD * exchangeRate;
-                const roundedTotalPriceIQD = Math.ceil(totalPriceIQD / 1000) * 1000;
-                document.getElementById('result').textContent = `Total Order cost is: ${roundedTotalPriceIQD.toLocaleString('en-US')} IQD`;
+            // Apply volume discount if applicable
+            let volumeDiscount = 0;
+            if (weight > VOLUME_DISCOUNT_THRESHOLD) {
+                volumeDiscount = shippingPriceUSD * VOLUME_DISCOUNT_RATE;
             }
 
+            // Apply oversized surcharge if dimensions exceed the limit
+            let oversizedSurcharge = 0;
+            if (length + width + height > OVERSIZE_DIM_LIMIT) {
+                oversizedSurcharge = OVERSIZED_SURCHARGE;
+            }
+
+            // Sub-final total calculation (includes tax, shipping, fuel surcharge, oversized surcharge, and volume discount)
+            let subFinalTotalUSD = productPrice + shippingPriceUSD + fuelSurcharge + tax + oversizedSurcharge - volumeDiscount;
+
+            // Apply Buy4Me charge (5%)
+            const finalTotalUSD = subFinalTotalUSD * 1.05;
+
+            // Round finalTotalUSD to the nearest whole number
+           const roundedFinalTotalUSD = Math.round(finalTotalUSD);
+
+            // Calculate final cost based on selected currency
+           if (paymentCurrency === 'USD') {
+    document.getElementById('result').textContent = `Total Order cost is: ${roundedFinalTotalUSD} USD`;
+           } else {
+          // IQD calculation
+          const totalPriceIQD = roundedFinalTotalUSD * EXCHANGE_RATE_IQD;
+     const roundedTotalPriceIQD = Math.ceil(totalPriceIQD / 1000) * 1000;
+    document.getElementById('result').textContent = `Total Order cost is: ${roundedTotalPriceIQD.toLocaleString('en-US')} IQD`;
+           }
         }
 
         function calculatePricePerPound(weight, itemType) {
-            // Normal items pricing by weight range
-            const normalPricing = [
-                { maxWeight: 1, price: 18 },
-                { maxWeight: 1.5, price: 16.50 },
-                { maxWeight: 2, price: 15.50 },
-                { maxWeight: 2.5, price: 14.50 },
-                { maxWeight: 3, price: 13.50 },
-                { maxWeight: 3.5, price: 13.00 },
-                { maxWeight: 4, price: 12.50 },
-                { maxWeight: 5, price: 12.00 },
-                { maxWeight: 7.5, price: 11.50 },
-                { maxWeight: 10, price: 11.00 },
-                { maxWeight: Infinity, price: 10.50 }
-            ];
-
-            // Dangerous goods surcharge based on weight
-            const dangerousGoodsSurcharge = weight <= 10 ? 15 : 25;
-
             // Calculate price based on item type
             if (itemType === 'normal') {
                 return getPriceForWeight(normalPricing, weight);
             } else {
                 // Dangerous items pricing: $34.50 for ≤ 1 lb, $17 + surcharge for > 1 lb
-                return weight <= 1 ? 34.50 : 17 + dangerousGoodsSurcharge;
+                return weight <= 1 ? 34.50 : 17 + (weight <= 10 ? dangerousGoodsSurcharge.lowWeight : dangerousGoodsSurcharge.highWeight);
             }
         }
 
