@@ -108,7 +108,7 @@
         const dangerousGoodsSurcharge = { 
             lowWeight: 15, 
             highWeight: 20, 
-            extraComplexity: 25 // Extra surcharge for weights over 10 lbs
+            extraComplexity: 10 // Extra surcharge for weights over 10 lbs
         };
 
         // Updated Volume Discount Tiers
@@ -135,7 +135,7 @@
 
             // Check if package exceeds dimension or weight limits
             if (length > 86.61 || width > 47.24 || height > 86.61 || weight > 1653.47) {
-                document.getElementById('result').textContent = 'Your Package exceeds the limit of Calculator, Please Contact 9ar Sales Agent for assistance';
+                document.getElementById('result').textContent = 'Your Package exceeds the pricing limit of Calculator, Please Contact 9ar Sales Agent for assistance';
                 return;
             }
 
