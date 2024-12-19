@@ -86,7 +86,7 @@
 
     <script>
         // Constants
-        const EXCHANGE_RATE_IQD = 1500 * 1.02;
+        const EXCHANGE_RATE_IQD = 1315 * 1.01;
         const FUEL_SURCHARGE_RATE = 0.05;
         const DIM_WEIGHT_DIVISOR = 139;
         const OVERSIZED_SURCHARGE = 50;
@@ -108,8 +108,8 @@
             extraComplexity: 5
         };
 
-        const VOLUME_DISCOUNT_30LB = 0.02;
-        const VOLUME_DISCOUNT_50LB = 0.04;
+        const VOLUME_DISCOUNT_30LB = 0.001;
+        const VOLUME_DISCOUNT_50LB = 0.002;
 
         // Helper Functions
         function validateInputs(productPrice, weight) {
@@ -233,7 +233,7 @@
                 return;
             }
 
-            weight = Math.max(weight, 0.25);
+            weight = Math.max(weight, 0.50);
 
             if (length > 86.61 || width > 47.24 || height > 86.61 || weight > 1653.47) {
                 displayError('Your package exceeds the pricing limit of the calculator. Please contact 9ar Sales Agent for assistance.');
