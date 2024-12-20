@@ -104,9 +104,9 @@
         // Constants
         const EXCHANGE_RATE_IQD = 1312 * 1.01;
         const FUEL_SURCHARGE_RATE = 0.05;
-        const DIM_WEIGHT_DIVISOR = 139;
-        const OVERSIZED_SURCHARGE = 50;
-        const OVERSIZE_DIM_LIMIT = 100;
+        const DIM_WEIGHT_DIVISOR = 166;
+        const OVERSIZED_SURCHARGE = 150;
+        const OVERSIZE_DIM_LIMIT = 96.70;
 
         const normalPricing = [
             { maxWeight: 1, price: 18 },
@@ -146,7 +146,7 @@
                 return false;
             }
             if (weight < 0) {
-                displayError("The shipment weight must be at least 0.50 LB.");
+                displayError("The shipment weight must be at least 1 LB.");
                 return false;
             }
             if (length < 0 || width < 0 || height < 0) {
@@ -248,7 +248,7 @@
             const dimWeight = calculateDimensionalWeight(length, width, height);
             weight = Math.max(weight, dimWeight);
 
-            if (length > 86.61 || width > 47.24 || height > 86.61 || weight > 1653.47) {
+            if (length > 48 || width > 21 || height > 24.70 || weight > 150) {
                 displayError('Your package exceeds the pricing limit of the calculator. Please contact 9ar Sales Agent for assistance.');
                 return;
             }
